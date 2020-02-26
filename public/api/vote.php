@@ -1,18 +1,7 @@
 <?php
-require_once '../../lib/Mail.php';
+require_once __DIR__ . '/include.php';
 
 $voted_for = @$_GET['kandidaat'];
-
-function techerr($line, $msg = 'SQL error') {
-	$data = array(
-		'found' => false,
-		'reason' => "Er heeft zich een technische fout voorgedaan (code {$line} / {$msg}"
-	);
-	header('Content-Type: application/json');
-	echo json_encode($data);
-	exit;
-	
-}
 
 if (!@$_GET['code']) {
 	$data = array(
@@ -109,7 +98,7 @@ if (!$lid) {
 		
 			try {
 				$subject = 'Bedankt voor jouw stem';
-				$content = "<p>Hallo Foresters lid!</p><p>Bedankt dat je je stem hebt uitgebracht op <strong>{$naam}</strong>. Hopelijk zien we elkaar op de Algemene Ledenvergadering van 25 maart waar de uitslag bekend wordt gemaakt.</p><hr><p>Met vriendelijke groet,<br><br>Organisatie Foresters Bestuursverkiezing 2020</p>";
+				$content = "<p>Hallo Foresters lid!</p><p>Bedankt dat je je stem hebt uitgebracht op <strong>{$naam}</strong>. Hopelijk zien we elkaar op de Algemene Ledenvergadering van 25 maart waar de uitslag bekend wordt gemaakt.</p><hr><p>Met vriendelijke groet,<br><br>Organisatie Foresters Bestuursverkiezing 2020</p><p><small style=\"color: #666666;\">Dit is een automatisch gegenereerde mail, het heeft geen zin deze te beantwoorden.</small></p>";
 				sendEmail($_GET['confirm-email'], $subject, $content);
 				$data['confirm-email'] = $_GET['confirm-email'];
 			} catch (Exception $e) {

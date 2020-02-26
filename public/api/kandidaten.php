@@ -1,12 +1,5 @@
 <?php
-
-class MyDB extends SQLite3
-{
-    function __construct()
-    {
-        $this->open(__DIR__ . '/../../verkiezingen.sqlite3');
-    }
-}
+require_once __DIR__ . '/include.php';
 
 $db = new MyDB();
 
