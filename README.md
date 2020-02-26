@@ -1,13 +1,6 @@
 # Verkiezingstool Bestuur De Foresters
 
 ## Install
-    mkdir [subdir-of-your-webroot]
-    cd [subdir-of-your-webroot]
-    git clone https://github.com/mightymax/foresters-verkiezingen.git
-    cp config.dist.php config.php
-    php composer.phar install
-    cat init.sql | sqlite3 verkiezingen.sqlite3
-	
 This install is just to give you the rough idea. As you can see there is 
 a 'public' directory which should be the root of your website or website-url.
 Files and folders outside of the public should definitely *NOT* be accessible
