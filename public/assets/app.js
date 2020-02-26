@@ -46,18 +46,32 @@ var modalTmpl;
 	window.addEventListener('hashchange', router);
 	window.addEventListener('load', function() {
 		
-		$('.tmpl').each(function(i, el) {
-			el = $(el);
-			var tmpl = '../templates/' + el.attr('id') + '.html';
+		var ul = $('<ul class="navbar-nav mr-auto"></ul>');
+		$('#navbar').append(ul);
+		
+		var navLinks = [
+			{id: 'home',       label: 'Home'},
+			{id: 'login',      label: 'Code aanvragen'},
+			{id: 'vote',       label: 'Stemmen'},
+			{id: 'kandidaten', label: 'Kandidaten'},
+			{id: 'uitleg',     label: 'Uitleg stemprocedure'}
+		];
+		
+		$.each(navLinks, function(i, el) {
+			var url = (el.id === 'home' ? '/' : '/' + el.id);
+			var tmpl = '../templates/' + el.id + '.html';
+			ul.append($('<li class="nav-item"><a class="nav-link" href="#'+url+'">'+el.label+'</a>'));
 			$.ajax(tmpl, {
 				dataType: 'html',
 				async: false,
 				complete: function(response) {
-					el.append($(response.responseText));
+					$('#view').append($('<div id="'+el.id+'" class="tmpl">'+response.responseText+'</div>'));
 				}
 			});
+			route(url, el.id);
 		});
-		
+		router();
+
 		$.getJSON('/api/kandidaten.php', {}, function(kandidaten){
 			$.each(kandidaten, function(k, kandidaat) {
 				var displayNaam;
@@ -81,20 +95,6 @@ var modalTmpl;
 		makeModal('vote-form-feedback', 'Stemformulier', '');
 		makeModal('confirm-login', 'Je bent succesvol ingelogd', '');
 		
-		$(['home', 'login', 'vote', 'kandidaten', 'uitleg']).each(function(i, el){
-			// console.log(el);
-		});
-
-		
-		route('/', 'home', function () {});
-		route('/login', 'login', function () {});
-		route('/vote', 'vote', function () {});
-		route('/kandidaten', 'kandidaten', function () {});
-		route('/uitleg', 'uitleg', function () {});
-		// route('*', 'error404', function () {alert(1);});
-		
-		router();
-
 		
 		$(':input').each(function(i, el){
 			if ($(el).attr('id') && !$(el).attr('name')) $(el).attr('name', $(el).attr('id'));
