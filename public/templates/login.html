@@ -1,0 +1,27 @@
+<p>Nadat we je gevens hebben gecontroleerd, ontvang je van ons een code op het door jou opgegeven e-mailadres.
+Deze code heb je nodig om je stem uit te brengen. </p>
+<p><strong>Let op:</strong> om veiligheidsredenen is deze code 12 uur geldig, daarna zulk je opnieuw moeten inloggen om een code aan te vragen.</p>
+<div class="alert alert-info" role="alert">Als je al eerder een code hebt ontvangen dan kun je gelijk <a href="#/vote">je stem uitbrengen</a>.</div>
+<form class="needs-validation" novalidate="" id="login-form" name="login-form">
+	<div class="form-row">
+		<div class="form-group col-md-4">
+			<label for="email">E-mailadres</label> <input type="email" class="form-control" id="email" aria-describedby="emailHelp" required>
+			<div class="invalid-feedback">
+				Voer een geldig E-mailadres in.
+			</div><small id="emailHelp" class="form-text text-muted">We gebruiken je e-mailadres alleen om te koppelen aan je KNVB Lidmaatschapsnummer.<br>
+			<strong>Let op:</strong> Gebruik hier het e-mailadres dat bij ons bekend is!</small>
+		</div>
+		<div class="form-group col-md-4">
+			<label for="nummer">Lidmaatschapsnummer</label> <input type="text" class="form-control" id="nummer" aria-describedby="lidnummerHelp" pattern="[A-Z0-9]{7}" minlength="7" maxlength="7" required>
+			<div class="invalid-feedback">
+				Voer een geldig Lidmaatschapsnummer in.
+			</div><small id="lidnummerHelp" class="form-text text-muted">Voor hier je KNVB Lidmaatschapsnummer in (of dat van je kind). Dit nummer bestaat uit een combinatie van 7 hoofletters en cijfers.</small>
+		</div>
+	</div>
+	<div class="form-row">
+		<div class="form-group col-md-2">
+			<button type="submit" class="btn btn-danger">Code aanvragen</button>
+			
+		</div>
+	</div>
+</form>

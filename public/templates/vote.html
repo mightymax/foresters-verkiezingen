@@ -1,0 +1,30 @@
+<p class="lead">Breng je stem uit voor de 2020 bestuursverkiezingen van Sportvereniging De Foresters!</p>
+<div class="alert alert-info" role="alert"><strong>Let op: </strong> Je kunt je stem alleen uitbrengen als je nog niet eerder gestemd hebt én als een geldige code hebt gehad die niet ouder is dan 12 uur. Mocht je geen geldige code hebben, dan kun je er <a href="#/login">hier</a> opnieuw een aanvragen, mits je nog geen stem hebt uitgebracht..</div>
+<form class="needs-validation" novalidate="" id="vote-form" name="vote-form">
+	<div class="form-row">
+		<div class="form-group col-md-5">
+			<label for="kandidaat">Kandidaat</label> 
+			<select name="kandidaat" id="kandidaat" class="form-control" required>
+				<option>-- Selecteer een kandidaat uit de lijst --</option>
+			</select>
+			<div class="invalid-feedback">Kies een kandidaat.</div>
+			<small id="kandidaatHelp" class="form-text text-muted">Kies een kandidaat uit de lijst. Alle kandidaten stellen zich voor op <a href="#/kandidaten">deze pagina</a>.</small>
+		</div>
+		<div class="form-group col-md-2">
+			<label for="code">Code</label> <input type="text" class="form-control" id="code" aria-describedby="codeHelp" pattern="[A-Z0-9]{6}" minlength="6" maxlength="6" required>
+			<div class="invalid-feedback">Voer de Code in die je van ons per e-mail hebt ontvangen.</div>
+			<small id="codeHelp" class="form-text text-muted">Voor hier de code in die je van ons per e-mail hebt ontvangen.</small>
+		</div>
+		<div class="form-group col-md-3">
+			<label for="email">E-mailadres</label> <input type="email" class="form-control" id="confirm-email" aria-describedby="emailHelp">
+			<div class="invalid-feedback">Voer een geldig E-mailadres in.</div>
+			<small id="emailHelp" class="form-text text-muted">Als je een bevestiging van je stem wilt, voer dan jouw e-mailadres in (niet verplicht).</small>
+		</div>
+	</div>
+	<div class="form-row">
+		<div class="form-group col-md-2">
+			<button type="submit" class="btn btn-danger">Stem uitbrengen</button>
+			
+		</div>
+	</div>
+</form>

@@ -1,0 +1,57 @@
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+main > .container {
+  padding: 50px 15px 0;
+}
+
+a {
+	color: #cf1b15;
+}
+
+code {
+  font-size: 80%;
+}
+
+h1 {font-size: 1.8em;}
+.navbar-brand img {height: 50px; padding: 0px;}
+
+.bg-foresters { 
+/*	background-color: #ffffff; */
+	border-bottom: solid 10px #cf1b15;
+	margin-bottom: 10px;
+	background-color: #fff; 
+/*	background: transparent;*/
+/*	opacity: 0.1;*/
+/*	filter:alpha(opacity=10);*/
+}
+
+a {
+	color: #cf1b15!important;
+}
+
+.nav-item a {
+	border-top: solid 1px #ffffff;
+	border-bottom: solid 1px #ffffff;
+}
+
+.nav-item a.active, .nav-item a.active:hover {
+	border-top: solid 1px #cf1b15;
+	border-bottom: solid 1px #cf1b15;
+}
+
+.nav-item a:hover {
+	border-top: dashed 1px #cf1b15;
+	border-bottom: dashed 1px #cf1b15;
+}
+
+h1, .modal-title {color: #cf1b15;}
+
+.modal-dialogs {display: hidden;}
+
+.tmpl {display: none;}
+
+*[data-toggle="tooltip"] { border-bottom: 1px dashed #666666;}
+
+
