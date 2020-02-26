@@ -1,3 +1,5 @@
 verkiezingen.sqlite3
 .DS_Store
 test.php
+composer.phar
+vendor
