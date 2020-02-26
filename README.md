@@ -13,6 +13,7 @@ a 'public' directory which should be the root of your website or website-url.
 Files and folders outside of the public should definitely *NOT* be accessible
 by your webserver. Easiest way is to clone repo outside webserver's DocRoot
 and symlink to 'public' dir:
+
     cd /usr/local/include/
     git clone https://github.com/mightymax/foresters-verkiezingen.git
     cp config.dist.php config.php
