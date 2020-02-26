@@ -81,9 +81,8 @@ var modalTmpl;
 		makeModal('vote-form-feedback', 'Stemformulier', '');
 		makeModal('confirm-login', 'Je bent succesvol ingelogd', '');
 		
-		['home', 'login', 'vote', 'kandidaten', 'uitleg'].each(function(i, el){
-			console.log(i);
-			console.log(el);
+		$(['home', 'login', 'vote', 'kandidaten', 'uitleg']).each(function(i, el){
+			// console.log(el);
 		});
 
 		
