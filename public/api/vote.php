@@ -13,16 +13,6 @@ if (!@$_GET['code']) {
 	exit;
 }
 
-class MyDB extends SQLite3
-{
-    function __construct()
-    {
-        $this->open(__DIR__ . '/../../verkiezingen.sqlite3');
-    }
-	
-}
-
-
 $db = new MyDB();
 
 
