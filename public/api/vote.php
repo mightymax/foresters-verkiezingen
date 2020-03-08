@@ -25,9 +25,6 @@ $result = $stmt->execute();
 
 $db->throttle();
 
-	
-
-
 if ($row['voted'] && (int)$row['voted']===1) {
 	$data = array(
 		'found' => false,
@@ -51,9 +48,11 @@ if ($row['voted'] && (int)$row['voted']===1) {
 		try {
 			$subject = 'Bedankt voor jouw stem';
 			if ($vote === 1) {
-				$vote_msg = 'Jij wil dat het huidge (interim) bestuur doorgaat als nieuw bestuur, wij danken je voor je steun!';
+				$vote_msg = 'Je wil dat het huidge (interim) bestuur doorgaat als nieuw bestuur, wij danken je voor je steun!';
+			} elseif($vote == -1) {
+				$vote_msg = 'Je hebt geen mening over voortzetting van het bestuur, maar je stem telt wel mee in de opkomst.';
 			} else {
-				$vote_msg = 'Jij wil dat er nieuwe verkiezingen gehouden worden.';
+				$vote_msg = 'Je wil dat er nieuwe verkiezingen gehouden worden.';
 			}
 			$content = "<p>Hallo Foresters lid!</p><p>Bedankt dat je je stem hebt uitgebracht. {$vote_msg} Hopelijk zien we elkaar op de Algemene Ledenvergadering van 25 maart waar de uitslag bekend wordt gemaakt.</p><hr><p>Met vriendelijke groet,<br><br>Organisatie Foresters Bestuursverkiezing 2020</p><p><small style=\"color: #666666;\">Dit is een automatisch gegenereerde mail, het heeft geen zin deze te beantwoorden.</small></p>";
 			sendEmail($_GET['confirm-email'], $subject, $content);

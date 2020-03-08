@@ -46,7 +46,22 @@ var modalTmpl;
 	window.addEventListener('hashchange', router);
 	window.addEventListener('load', function() {
 		
+		var img=new Image();
+		img.src='assets/ajax-loader.gif';
+			
 		var params;
+		
+
+		function show_spinner () {
+		  $("#spinner-front").addClass("show");
+		  $("#spinner-back").addClass("show");
+		}
+		
+		function hide_spinner () {
+		  $("#spinner-front").removeClass("show");
+		  $("#spinner-back").removeClass("show");
+		}
+		
 		
 		var self = this;
 		$.ajax('./api/params.php', {
@@ -117,7 +132,8 @@ var modalTmpl;
 			
 			event.preventDefault();
 			event.stopPropagation();
-
+			
+			show_spinner();
 			$.getJSON( "api/vote.php", $(this).serializeArray(), function(data, textStatus, jqXHR) {
 				if (data.found==false) {
 					$($('#vote-form-feedback').find('.modal-body')).html('<p>Het is helaas niet gelukt om je stem te ontvangen. Hieronder zie je de reden:</p><p><code>'+data.reason+'</code></p>')
@@ -132,10 +148,12 @@ var modalTmpl;
 					$('#confirm-email').val('');
 					window.location.replace('#/');
 				}
+				hide_spinner();
 				$('#vote-form-feedback').modal('show');
 			})
 			.fail(function(){
 				alert('Het stemmen is niet gelukt door een technische fout.');
+				hide_spinner();
 			});
 		});
 			
