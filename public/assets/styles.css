@@ -6,7 +6,7 @@ main > .container {
   padding: 50px 15px 0;
 }
 
-a {
+a, .for-red {
 	color: #cf1b15;
 }
 
@@ -53,5 +53,7 @@ h1, .modal-title {color: #cf1b15;}
 .tmpl {display: none;}
 
 *[data-toggle="tooltip"] { border-bottom: 1px dashed #666666;}
+
+label.no-validate-style {color: #000000!important;}
 
 

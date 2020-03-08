@@ -1,104 +1,70 @@
 <?php
 require_once __DIR__ . '/include.php';
 
-$voted_for = @$_GET['kandidaat'];
-
-if (!@$_GET['code']) {
-	$data = array(
-		'found' => false,
-		'reason' => 'Voer de code in die we je per mail gestuurd hebben of vraag een nieuwe code aan (alleen als je nog niet eerder je stem hebt uitgebracht).'
-	);
-	header('Content-Type: application/json');
-	echo json_encode($data);
-	exit;
-}
+@$_GET['code'] || err('Geen code ontvangen');
+@$_GET['vote'] || err('Geen stem ontvangen.');
+preg_match('/^(yes|no|blanco)$/', $_GET['vote']) || err('Ongeldige stem.');
+preg_match('/^[A-Z0-9]{6}$/', $_GET['code']) || err('Ongeldige code.');
 
 $db = new MyDB();
 
+if ($db->getParam('power') == 'off') err("De website is momenteel niet beschikbaar.");
 
-$stmt = $db->prepare('SELECT * FROM kandidaat WHERE code=:code');
-$stmt->bindValue(':code', $voted_for);
-$result = $stmt->execute();
-$kandidaat = $result->fetchArray(SQLITE3_ASSOC);
-
-if (!$kandidaat) {
-	$data = array(
-		'found' => false,
-		'reason' => 'Ongeldige kandidaat: de gekozen kandidaat staat niet in de lijst met kandidaten.'
-	);
-	header('Content-Type: application/json');
-	echo json_encode($data);
-	exit;
-} elseif ((int)$kandidaat['is_group'] === 1) {
-		$kandidaat['anderen'] = [];
-		$stmt = $db->prepare('SELECT naam, rol FROM kandidaat WHERE hoort_by=:code');
-		$stmt->bindValue(':code', $kandidaat['code']);
-		$hoort_by_result = $stmt->execute();
-		while($hoort_by = $hoort_by_result->fetchArray(SQLITE3_ASSOC)) {
-			$kandidaat['anderen'][] = $hoort_by;
-		}
+switch ($_GET['vote']) {
+	case 'yes':    $vote =  1; break;
+	case 'no' :    $vote =  0; break;
+	case 'blanco': $vote = -1; break;
 }
 
-$stmt = $db->prepare('SELECT *, strftime("%s",CURRENT_TIMESTAMP) - strftime("%s", login_on) AS sec_passed FROM leden WHERE hash=:hash');
-$stmt->bindValue(':hash', @$_GET['code']);
+$code = @$_GET['code'];
 
+$stmt = $db->prepare('SELECT * FROM codes WHERE code=:code');
+$stmt->bindValue(':code', $code);
 $result = $stmt->execute();
-$lid = $result->fetchArray(SQLITE3_ASSOC);
-if (!$lid) {
+($row = $result->fetchArray(SQLITE3_ASSOC)) || err('Voer de code in die we je per mail gestuurd hebben of klik de link aan uit je e-mail.');
+
+$db->throttle();
+
+	
+
+
+if ($row['voted'] && (int)$row['voted']===1) {
 	$data = array(
 		'found' => false,
-		'reason' => 'Ongeldige of verlopen code: vraag eventueel een nieuwe code aan door opnieuw in te loggen.'
+		'reason' => 'De code is al eens eerder gebruikt om een stem uit te brengen.'
 	);
 } else {
-	if ($lid['voted_on']) {
-		$data = array(
-			'found' => false,
-			'reason' => 'Je hebt je stem al uitgebracht op '.date('d-m-Y', strtotime($lid['voted_on'])).'.'
-		);
-	} elseif ($lid['sec_passed'] > 12 * 3600) {
-		$data = array(
-			'found' => false,
-			'reason' => 'Je code is verlopen: vraag eventueel een nieuwe code aan door opnieuw in te loggen.'
-		);
-	} else {
-		$stmt = @$db->prepare('UPDATE kandidaat SET votes=votes+1 WHERE code=:code');
-		if (!$stmt) techerr(__LINE__);
-		$stmt->bindValue(':code', $voted_for);
-		$result = $stmt->execute();
-		
-		//Backup votes, maybe for statistical purpuses?
-		$stmt = $db->prepare('INSERT INTO votes (kandidaat, voted_on) VALUES (:code, DATETIME())');
-		if (!$stmt) techerr(__LINE__);
-		$stmt->bindValue(':code', $voted_for);
-		$result = $stmt->execute();
-		
-		$stmt = @$db->prepare('UPDATE leden SET voted_on=DATETIME() WHERE hash=:hash');
-		if (!$stmt) techerr(__LINE__);
+	$stmt = $db->prepare('INSERT INTO votes (vote, voted_on) VALUES (:vote, DATETIME())');
+	if (!$stmt) techerr(__LINE__);
+	$stmt->bindValue(':vote', $vote);
+	$result = $stmt->execute();
+	
+	$stmt = @$db->prepare('UPDATE codes SET voted=1 WHERE code=:code');
+	if (!$stmt) techerr(__LINE__);
 
-		$stmt->bindValue(':hash', $lid['hash']);
-		$stmt->execute();
-		
-		$data = array('found' => true);
-		
-		if (@$_GET['confirm-email']) {
-			$naam = $kandidaat['naam'];
-			if ($kandidaat['is_group']) {
-				$naam .= ', ' . $kandidaat['anderen'][0]['naam'] . ' en ' . $kandidaat['anderen'][1]['naam'];
+	$stmt->bindValue(':code', $code);
+	$stmt->execute();
+	
+	$data = array('found' => true);
+	
+	if (@$_GET['confirm-email']) {
+		try {
+			$subject = 'Bedankt voor jouw stem';
+			if ($vote === 1) {
+				$vote_msg = 'Jij wil dat het huidge (interim) bestuur doorgaat als nieuw bestuur, wij danken je voor je steun!';
+			} else {
+				$vote_msg = 'Jij wil dat er nieuwe verkiezingen gehouden worden.';
 			}
-		
-			try {
-				$subject = 'Bedankt voor jouw stem';
-				$content = "<p>Hallo Foresters lid!</p><p>Bedankt dat je je stem hebt uitgebracht op <strong>{$naam}</strong>. Hopelijk zien we elkaar op de Algemene Ledenvergadering van 25 maart waar de uitslag bekend wordt gemaakt.</p><hr><p>Met vriendelijke groet,<br><br>Organisatie Foresters Bestuursverkiezing 2020</p><p><small style=\"color: #666666;\">Dit is een automatisch gegenereerde mail, het heeft geen zin deze te beantwoorden.</small></p>";
-				sendEmail($_GET['confirm-email'], $subject, $content);
-				$data['confirm-email'] = $_GET['confirm-email'];
-			} catch (Exception $e) {
-				header('X-Error-Message: ' . $e->getMessage());
-			}
-		} else {
-			header('X-Error-Message: Geen e-mailadres bekend.');
+			$content = "<p>Hallo Foresters lid!</p><p>Bedankt dat je je stem hebt uitgebracht. {$vote_msg} Hopelijk zien we elkaar op de Algemene Ledenvergadering van 25 maart waar de uitslag bekend wordt gemaakt.</p><hr><p>Met vriendelijke groet,<br><br>Organisatie Foresters Bestuursverkiezing 2020</p><p><small style=\"color: #666666;\">Dit is een automatisch gegenereerde mail, het heeft geen zin deze te beantwoorden.</small></p>";
+			sendEmail($_GET['confirm-email'], $subject, $content);
+			$data['confirm-email'] = $_GET['confirm-email'];
+		} catch (Exception $e) {
+			header('X-Error-Message: ' . $e->getMessage());
 		}
-		
+	} else {
+		header('X-Error-Message: Geen e-mailadres bekend.');
 	}
+	
 }
 
 header('Content-Type: application/json');

@@ -3,12 +3,19 @@ require __DIR__ . '/../../vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 
-function sendEmail($mailTo, $subject, $content)
+function getConfig($section = null)
 {
 	$config = @include(__DIR__ . '/../../config.php');
-	if (!$config || !isset($config['email'])) {
-		throw new Exception('Missing config file or "email" section');
+	if (!$config || ($section !== null && !isset($config[$section]))) {
+		throw new Exception('Missing config file or specific section');
 	}
+	return $section === null ? $config : $config[$section];
+	
+}
+
+function sendEmail($mailTo, $subject, $content)
+{
+	$config = getConfig('email');
 
 	$mail = new PHPMailer(true);
 	
@@ -20,7 +27,7 @@ function sendEmail($mailTo, $subject, $content)
 	$mail->Host     = "smtp.gmail.com";
 	$mail->Mailer   = "smtp";
 	
-	foreach ($config['email'] as $key => $val) {
+	foreach ($config as $key => $val) {
 		if ($key === 'Mailer' && $val === 'smtp') $mail->IsSMTP();
 		if (!is_array($val) && !is_object($val)) {
 			$mail->set($key, $val);
@@ -48,7 +55,7 @@ function create_hash()
 function techerr($line, $msg = 'SQL error') {
 	$data = array(
 		'found' => false,
-		'reason' => "Er heeft zich een technische fout voorgedaan (code {$line} / {$msg}"
+		'reason' => "Er heeft zich een technische fout voorgedaan (code {$line} / {$msg})"
 	);
 	header('Content-Type: application/json');
 	echo json_encode($data);
@@ -56,11 +63,121 @@ function techerr($line, $msg = 'SQL error') {
 	
 }
 
+function err($msg) {
+	$data = array(
+		'found' => false,
+		'reason' => $msg
+	);
+	header('Content-Type: application/json');
+	echo json_encode($data);
+	exit;
+}
+
+function msg($msg) {
+	$data = array(
+		'found' => true,
+		'reason' => $msg
+	);
+	header('Content-Type: application/json');
+	echo json_encode($data);
+	exit;
+}
+
 class MyDB extends SQLite3
 {
+	public $throttle_timeout = 60;
+	public $max_attempts = 5;
+	
+	protected static $params = null;
+	
     function __construct()
     {
         $this->open(__DIR__ . '/../../verkiezingen.sqlite3');
     }
+	
+	public static function limitReached()
+	{
+		sleep(20);
+		$data = array(
+			'found' => false,
+			'reason' => "You've exceeded the number of API requests. We've blocked IP address {$_SERVER['REMOTE_ADDR']} for a few minutes."
+		);
+		header('Content-Type: application/json');
+		header("HTTP/1.1 429 Too Many Requests");
+		echo json_encode($data);
+		exit;
+	}
+	
+	public function throttle()
+	{
+		$ip = @$_SERVER['REMOTE_ADDR'];
+		if (!$ip) self::limitReached();
+		$stmt = @$this->prepare('SELECT attempts, last_seen FROM throttle WHERE strftime("%s",CURRENT_TIMESTAMP) - strftime("%s", last_seen) <= :throttle_timeout AND ip=:ip');
+		if (!$stmt) techerr(__LINE__);
+		$stmt->bindValue(':throttle_timeout', $this->throttle_timeout);
+		$stmt->bindValue(':ip', $ip);
+		$result = $stmt->execute();
+		$row = $result->fetchArray(SQLITE3_ASSOC);
+		if (!$row) {
+			$stmt = @$this->prepare('DELETE FROM throttle WHERE ip=:ip');
+			if (!$stmt) techerr(__LINE__);
+			$stmt->bindValue(':ip', $ip);
+			$stmt->execute();
+
+			$stmt = @$this->prepare('INSERT INTO throttle (ip, attempts, last_seen) VALUES (:ip, 1, DATETIME())');
+			if (!$stmt) techerr(__LINE__);
+			$stmt->bindValue(':ip', $ip);
+			$stmt->execute();
+			return true;
+		} else {
+			$stmt = @$this->prepare('UPDATE throttle SET attempts=attempts+1, last_seen=DATETIME() WHERE ip==:ip AND last_seen=:last_seen');
+			if (!$stmt) techerr(__LINE__);
+			$stmt->bindValue(':ip', $ip);
+			$stmt->bindValue(':last_seen', $row['last_seen']);
+			$stmt->execute();
+
+			if ($row['attempts'] > $this->max_attempts) {
+				self::limitReached();
+			} else {
+				return true;
+			}
+		}
+	}
+	public function getParams()
+	{
+		if (self::$params === null) {
+			$stmt = @$this->prepare('SELECT * FROM params');
+			if (!$stmt) techerr(__LINE__);
+			$result = $stmt->execute();
+			self::$params = array();
+			while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+				self::$params[$row['key']] = $row['val'];
+			}
+		}
+		return self::$params;
+	}
+	
+	public function getParam($key) 
+	{
+		return isset($this->getParams()[$key]) ? $this->getParams()[$key] : null;
+	}
+	public function setParam($key, $val = null)
+	{
+		$stmt = @$this->prepare('DELETE FROM params WHERE key=:key');
+		if (!$stmt) techerr(__LINE__);
+		$stmt->bindValue(':key', $key);
+		$stmt->execute();
+		
+		if (null !== $val) {
+			$stmt = @$this->prepare('INSERT INTO params VALUES (:key, :val)');
+			$stmt->bindValue(':key', $key);
+			$stmt->bindValue(':val', $val);
+			$stmt->execute();
+		}
+		
+		return true;
+		
+	}
 }
+
 

@@ -18,5 +18,10 @@ return [
 			'email' => 'your-gmail-address@gmail.com',
 			'name'  => 'Your fancy website name'
 		]
+	],
+	'admin' => [
+		'ip_addresses' => [
+			'127.0.0.1'
+		]
 	]
 ];

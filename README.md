@@ -15,3 +15,6 @@ and symlink to 'public' dir:
     cd [DocRoot]/[WebRoot]
 	ln -s /usr/local/include/foresters-verkiezingen/public [subdir-of-your-webroot]
 	
+## Tags
+ - v1.0 Version based on multiple candidates, both individuals as well as groups
+ 
