@@ -28,7 +28,7 @@ var modalTmpl;
 
 	function makeModal(id, header, body) {
 		if (!modalTmpl) {
-			$.ajax('../templates/modal.html', {
+			$.ajax('./templates/modal.html', {
 				dataType: 'html',
 				async: false,
 				complete: function(response){
@@ -89,7 +89,7 @@ var modalTmpl;
 		
 		$.each(navLinks, function(i, el) {
 			var url = (el.id === 'home' ? '/' : '/' + el.id);
-			var tmpl = '../templates/' + el.id + '.html';
+			var tmpl = './templates/' + el.id + '.html';
 			ul.append($('<li class="nav-item"><a class="nav-link" href="#'+url+'">'+el.label+'</a>'));
 			$.ajax(tmpl, {
 				dataType: 'html',
