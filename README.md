@@ -13,8 +13,15 @@ and symlink to 'public' dir:
     php composer.phar install
     cat init.sql | sqlite3 verkiezingen.sqlite3
     cd [DocRoot]/[WebRoot]
-	ln -s /usr/local/include/foresters-verkiezingen/public [subdir-of-your-webroot]
-	
+    ln -s /usr/local/include/foresters-verkiezingen/public [subdir-of-your-webroot]
+    cd [DocRoot]/[WebRoot]/[subdir-of-your-webroot]/api/
+    cp defines.dist.php defines.php
+
+After installation check and modify two files:
+1. /usr/local/include/config.php
+2. [DocRoot]/[WebRoot]/[subdir-of-your-webroot]/api/defines.php
+Modifications should be self-explanatory, but feel free to ask for help.
+
 ## Tags
  - v1.0 Version based on multiple candidates, both individuals as well as groups
  

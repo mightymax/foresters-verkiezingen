@@ -12,13 +12,17 @@ if (!in_array($_SERVER['REMOTE_ADDR'], $config['ip_addresses'])) {
 
 $cmd = @$_GET['cmd']; //RPC light ...
 switch ($cmd) {
-	case 'power_on':
+	case 'power-on':
 		$db->setParam('power', 'on');
 		msg("Power is on");
-		break;
-	case 'power_off':
+	case 'power-off':
 		$db->setParam('power', 'off');
 		msg("Power is off");
+	case 'reset-code':
+		$db->resetCode(@$_GET['code']);
+		msg("Code reset");
+	case 'print-defines':
+		highlight_file(__DIR__ . '/defines.php');
 		break;
 	default:
 		header("HTTP/1.1 405 Method Not Allowed");

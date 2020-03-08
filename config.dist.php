@@ -2,6 +2,7 @@
 
 return [
 	'url' => 'http://deforesters.test/verkiezingen',
+	'dbPath' => __DIR__ . '/verkiezingen.sqlite3',
 	'email' => [
 		'SMTPDebug'  => 0,
 		'SMTPAuth'   => TRUE,

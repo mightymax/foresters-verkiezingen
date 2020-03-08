@@ -1,16 +1,25 @@
 <?php
-require __DIR__ . '/../../vendor/autoload.php';
+if (file_exists(__DIR__ . '/defines.php')) {
+	require(__DIR__ . '/defines.php');
+}
+
+//This is not suitable for production envirements, use the defines.php in stead to define proper paths
+if (!defined('CONFIG_FILE_LOCATION')) define('CONFIG_FILE_LOCATION', __DIR__ . '/../../config.php');
+if (!defined('AUTOLOADER_LOCATION')) define('AUTOLOADER_LOCATION', __DIR__ . '/../../vendor/autoload.php');
+
+
+require AUTOLOADER_LOCATION;
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 
 function getConfig($section = null)
 {
-	$config = @include(__DIR__ . '/../../config.php');
+	$config = @include(CONFIG_FILE_LOCATION);
 	if (!$config || ($section !== null && !isset($config[$section]))) {
 		throw new Exception('Missing config file or specific section');
 	}
 	return $section === null ? $config : $config[$section];
-	
 }
 
 function sendEmail($mailTo, $subject, $content)
@@ -92,7 +101,8 @@ class MyDB extends SQLite3
 	
     function __construct()
     {
-        $this->open(__DIR__ . '/../../verkiezingen.sqlite3');
+		$dbPath = getConfig('dbPath');
+        $this->open($dbPath);
     }
 	
 	public static function limitReached()
@@ -160,6 +170,22 @@ class MyDB extends SQLite3
 	public function getParam($key) 
 	{
 		return isset($this->getParams()[$key]) ? $this->getParams()[$key] : null;
+	}
+	
+	public function resetCode($code)
+	{
+		if (!$code) return;
+		$stmt = @$this->prepare('DELETE FROM codes WHERE code=:code');
+		if (!$stmt) techerr(__LINE__);
+		$stmt->bindValue(':code', $code);
+		$stmt->execute();
+		
+		$stmt = @$this->prepare('INSERT INTO codes (code, voted) VALUES (:code, 0)');
+		$stmt->bindValue(':code', $code);
+		$stmt->execute();
+		
+		return true;
+		
 	}
 	public function setParam($key, $val = null)
 	{

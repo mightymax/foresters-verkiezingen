@@ -86,7 +86,18 @@ while (($data = fgetcsv($fp, 1000, ",")) !== FALSE) {
 	} else {
 		$age = DateTime::createFromFormat('d/m/Y', $data['geboren'], $tz)->diff(new DateTime('now', $tz))->y;
 		$name = ($age < 18 ? '(ouders/verzorgers van) ' : '') . $data['naam'];
-		$code = create_hash();
+		$stmt = $db->prepare('SELECT * FROM codes WHERE code=:code');
+
+		$row = true;
+		//Prevents duplicate codes
+		while($row) {
+			$code = create_hash();
+			$stmt->bindValue(':code', $code);
+			$result = $stmt->execute();
+			$row = $result->fetchArray();
+			$stmt->reset();
+		}
+		
 		$body = str_replace(
 			['[NAAM]', '[EMAIL]', '[CODE]'],
 			[$name, $data['email'], $code],
@@ -107,10 +118,6 @@ while (($data = fgetcsv($fp, 1000, ",")) !== FALSE) {
 		}
 		break;
 	}
-	// var_dump($data);
 }
 
 fclose($fp);
-
-
-// sendEmail('mark@lindeman.nu', 'Testing 123', 'This is only a test...');
