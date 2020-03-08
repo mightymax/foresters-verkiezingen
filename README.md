@@ -9,6 +9,7 @@ and symlink to 'public' dir:
 
     cd /usr/local/include/
     git clone https://github.com/mightymax/foresters-verkiezingen.git
+	cd foresters-verkiezingen
     cp config.dist.php config.php
     php composer.phar install
     cat init.sql | sqlite3 verkiezingen.sqlite3
@@ -21,6 +22,10 @@ After installation check and modify two files:
 1. /usr/local/include/config.php
 2. [DocRoot]/[WebRoot]/[subdir-of-your-webroot]/api/defines.php
 Modifications should be self-explanatory, but feel free to ask for help.
+
+## Updating to latest changes
+    cd /usr/local/include/foresters-verkiezinge
+    git pull origin master
 
 ## Tags
  - v1.0 Version based on multiple candidates, both individuals as well as groups
