@@ -47,7 +47,7 @@ function sendEmail($mailTo, $subject, $content)
 	return $mail->Send();
 }
 
-function create_hash()
+function create_hash($size = 6)
 {
 	return str_shuffle(str_shuffle(substr(str_shuffle("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), 0, 6)));
 }

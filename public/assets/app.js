@@ -86,7 +86,16 @@ var modalTmpl;
 			route(url, el.id);
 		});
 		router();
-
+		
+		var url = new URL(window.location.href);
+		var code = url.searchParams.get("code");
+		if (code) {
+			$('#code').val(code);
+		}
+		var email = url.searchParams.get("confirm-email");
+		if (email) {
+			$('#confirm-email').val(email);
+		}
 
 		makeModal('error-404', 'Ongeldige pagina.', 'De pagina die je probeert te bezoeken bestaat niet.');
 		makeModal('vote-form-feedback', 'Stemformulier', '');

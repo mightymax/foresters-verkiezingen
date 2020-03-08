@@ -1,6 +1,7 @@
 <?php
 
 return [
+	'url' => 'http://deforesters.test/verkiezingen',
 	'email' => [
 		'SMTPDebug'  => 0,
 		'SMTPAuth'   => TRUE,
