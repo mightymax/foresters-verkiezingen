@@ -22,7 +22,7 @@ if (!file_exists($csv) || !is_file($csv) || !is_readable($csv)) {
 }
 
 $fp = fopen($argv[1], 'r');
-$cols = ['naam', 'email', 'geboren'];
+$cols = ['naam', 'email', 'leeftijd'];
 $i = 0;
 
 $subject = "Jouw unieke Foresters code voor de bestuursverkiezingen.";
@@ -84,8 +84,9 @@ while (($data = fgetcsv($fp, 1000, ",")) !== FALSE) {
 		fwrite(STDERR, "{$data['email']},validateAddress fail\n");
 		continue;
 	} else {
-		$age = DateTime::createFromFormat('d/m/Y', $data['geboren'], $tz)->diff(new DateTime('now', $tz))->y;
-		$name = ($age < 18 ? '(ouders/verzorgers van) ' : '') . $data['naam'];
+		// $age = DateTime::createFromFormat('d/m/Y', $data['geboren'], $tz)->diff(new DateTime('now', $tz))->y;
+		// $name = ($age < 18 ? '(ouders/verzorgers van) ' : '') . $data['naam'];
+		$name = ($data['leeftijd'] < 18 ? '(ouders/verzorgers van) ' : '') . $data['naam'];
 		$stmt = $db->prepare('SELECT * FROM codes WHERE code=:code');
 
 		$row = true;
@@ -103,7 +104,7 @@ while (($data = fgetcsv($fp, 1000, ",")) !== FALSE) {
 			[$name, $data['email'], $code],
 			$TMPL
 		);
-		if (sendEmail( $data['email'], $subject, $body)) {
+		if (sendEmail($data['email'], $subject, $body)) {
 			fwrite(STDOUT, "Code [{$code}] sent to [{$data['email']}]\n");
 			$stmt->reset();
 			$stmt->bindParam(':code', $code);

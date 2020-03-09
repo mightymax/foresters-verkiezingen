@@ -172,7 +172,7 @@ class MyDB extends SQLite3
 		return isset($this->getParams()[$key]) ? $this->getParams()[$key] : null;
 	}
 	
-	public function resetCode($code)
+	public function resetCode($code, $delete = false)
 	{
 		if (!$code) return;
 		$stmt = @$this->prepare('DELETE FROM codes WHERE code=:code');
@@ -180,9 +180,11 @@ class MyDB extends SQLite3
 		$stmt->bindValue(':code', $code);
 		$stmt->execute();
 		
-		$stmt = @$this->prepare('INSERT INTO codes (code, voted) VALUES (:code, 0)');
-		$stmt->bindValue(':code', $code);
-		$stmt->execute();
+		if (false === $delete) {
+			$stmt = @$this->prepare('INSERT INTO codes (code, voted) VALUES (:code, 0)');
+			$stmt->bindValue(':code', $code);
+			$stmt->execute();
+		}
 		
 		return true;
 		
