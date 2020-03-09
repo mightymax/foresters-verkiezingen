@@ -33,8 +33,12 @@ switch ($cmd) {
 	case 'print-defines':
 		highlight_file(__DIR__ . '/defines.php');
 		break;
+	case 'print-config':
+		echo str_replace(getConfig('email')['Password'], '****', highlight_file(CONFIG_FILE_LOCATION, true));
+		break;
 	case 'phpinfo':
 		phpinfo();
+		break;
 	default:
 		header("HTTP/1.1 405 Method Not Allowed");
 		err("Unkown or illegale remote procedure call.");
