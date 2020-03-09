@@ -5,7 +5,12 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/include.php';
 
-$config = getConfig('admin');
+try {
+	$config = getConfig('admin');
+} catch(Exception $e) {
+	header("HTTP/1.1 500 Internal Server Error");
+	err("Failed to get config.");
+}
 
 if (!in_array($_SERVER['REMOTE_ADDR'], $config['ip_addresses'])) {
 	header("HTTP/1.1 403 Forbidden");
