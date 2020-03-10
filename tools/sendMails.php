@@ -68,7 +68,6 @@ while ($row = $emailResult->fetchArray(SQLITE3_ASSOC)) {
 			$TMPL
 		);
 		if (sendEmail($row['email'], $subject, $body, DRY_RUN)) {
-			fwrite(STDOUT, "Code [{$code}] sent to {$row['naam']} [{$row['email']}]\n");
 			
 			$stmtEmailUpdate->reset();
 			$stmtEmailUpdate->bindParam(':code', $code);
@@ -82,13 +81,20 @@ while ($row = $emailResult->fetchArray(SQLITE3_ASSOC)) {
 			$jsonResponse = file_get_contents(getConfig('url') . '/api/admin.php?cmd=reset-code&code=' . $code);
 			if (!$jsonResponse || !json_decode($jsonResponse)) {
 				fwrite(STDERR, "{$row['email']},code {$code} not saved in remote DB (using API)\n");
-				fwrite(STDERR, "PANIC MODE!!!");
+				fwrite(STDERR, "PANIC MODE ON LINE ".__LINE__."!!!");
 				exit(6);
 			}
-			
+			fwrite(STDOUT, "Code [{$code}] sent to {$row['naam']} [{$row['email']}]");
+			for ($i=0; $i<5; $i++) {
+				fwrite(STDOUT, " ".($i+1));
+				sleep(1);
+			}
+			fwrite(STDERR, "\n");
 			
 		} else {
 			fwrite(STDERR, "{$row['email']},sendMail failed\n");
+			fwrite(STDERR, "PANIC MODE ON LINE ".__LINE__."!!!");
+			exit(6);
 			continue;
 		}
 	}

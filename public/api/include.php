@@ -215,6 +215,31 @@ class MyDB extends SQLite3
 		return true;
 		
 	}
+	
+	public function getStats()
+	{
+		$stats = ['codes' => [], 'votes' => []];
+		$stmt = @$this->prepare('SELECT voted, COUNT(*) AS c FROM codes GROUP BY voted');
+		$result = $stmt->execute();
+		while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+			$k = (int)$row['voted']===1 ? 'voted' : 'not-voted';
+			$stats['codes'][$k] = $row['c'];
+		}
+		$stmt = @$this->prepare('SELECT vote, COUNT(vote) AS c FROM votes GROUP BY vote;');
+		$result = $stmt->execute();
+		while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+			switch ((int)$row['vote']) {
+				case -1:
+					$k = 'blanco'; break;
+				case 1:
+					$k = 'yes'; break;
+				case 0:
+					$k = 'no'; break;
+			}
+			$stats['votes'][$k] = $row['c'];
+		}
+		return $stats;
+	}
 }
 
 
