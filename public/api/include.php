@@ -22,7 +22,7 @@ function getConfig($section = null)
 	return $section === null ? $config : $config[$section];
 }
 
-function sendEmail($mailTo, $subject, $content)
+function sendEmail($mailTo, $subject, $content, $dryRun = false)
 {
 	$config = getConfig('email');
 
@@ -53,7 +53,12 @@ function sendEmail($mailTo, $subject, $content)
 	$mail->MsgHTML($content);
 	$mail->IsHTML(true);
 
-	return $mail->Send();
+	if(true === $dryRun) {
+		return true;
+	} else {
+		// throw new Exception('Better safe than sorry!');
+		return $mail->Send();
+	}
 }
 
 function create_hash($size = 6)
@@ -66,9 +71,13 @@ function techerr($line, $msg = 'SQL error') {
 		'found' => false,
 		'reason' => "Er heeft zich een technische fout voorgedaan (code {$line} / {$msg})"
 	);
-	header('Content-Type: application/json');
-	echo json_encode($data);
-	exit;
+	if(php_sapi_name()=='cli') {
+		fwrite(STDERR, $data['reason']."\n");
+	} else {
+		header('Content-Type: application/json');
+		echo json_encode($data);
+	}
+	exit($line);
 	
 }
 

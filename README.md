@@ -21,7 +21,10 @@ and symlink to 'public' dir:
 After installation check and modify two files:
 1. /usr/local/include/config.php
 2. [DocRoot]/[WebRoot]/[subdir-of-your-webroot]/api/defines.php
+
 Modifications should be self-explanatory, but feel free to ask for help.
+
+Also make sure your web server has write access to the sqlite3 DB in /usr/local/include/foresters-verkiezingen/
 
 ## Updating to latest changes
     cd /usr/local/include/foresters-verkiezinge

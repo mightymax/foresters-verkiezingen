@@ -6,3 +6,5 @@ vendor
 config.php
 public/api/defines.php
 misc
+tools/emails.sqlite3
+tools/leden.csv

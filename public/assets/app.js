@@ -141,6 +141,9 @@ var modalTmpl;
 					var emailMessage = jqXHR.getResponseHeader('X-Error-Message');
 					if (emailMessage) {
 						$($('#vote-form-feedback').find('.modal-body')).html('<p>Je stem is uitgebracht en vastgelegd in ons systeem.</p>');
+						$('#vote-form-feedback').on('hidden.bs.modal', function (e) {
+							window.location.replace('https://www.deforesters.nl');
+						});
 					} else {
 						$($('#vote-form-feedback').find('.modal-body')).html('<p>Je stem is uitgebracht en vastgelegd in ons systeem. We hebben een bevestiging van je stem naar je e-mailadres (' + data['confirm-email'] + ') verzonden.</p><p>Dank je wel voor je stem en hopelijk zien we elkaar op de Algemene Ledenvergadering!');
 					}
