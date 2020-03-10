@@ -47,6 +47,7 @@ function sendEmail($mailTo, $subject, $content, $dryRun = false)
 		}
 	}
 	
+	$mail->SMTPDebug = SMTP::DEBUG_SERVER;
 	$mail->WordWrap   = 80;
 	$mail->Subject = $subject;
 	$mail->AddAddress($mailTo);

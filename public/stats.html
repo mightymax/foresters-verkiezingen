@@ -3,25 +3,22 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load("current", {packages:["corechart"]});
-        function drawChart(rawData, title) {
-          var data = google.visualization.arrayToDataTable(rawData);
-
-
-          
-          chart.draw(data, options);
-        }
-
-		window.addEventListener('load', function() {
+		function drawChart()
+		{
 			$.ajax('./api/stats.php', {
 				dataType: 'json',
 				complete: function(response) {
+					$('#piechart_3d').empty();
+					var yesCount = response.responseJSON.votes.yes ? response.responseJSON.votes.yes : 0;
+					var noCount = response.responseJSON.votes.no ? response.responseJSON.votes.no : 0;
+					var blancoCount = response.responseJSON.votes.blanco ? response.responseJSON.votes.blanco : 0;
 					var data = google.visualization.arrayToDataTable([
 						['Stem', 'Aantal stemmen'],
-						['Ja',     response.responseJSON.votes.yes ? response.responseJSON.votes.yes : 0],
-						['Nee',      response.responseJSON.votes.no ? response.responseJSON.votes.no : 0],
-						['Blanco',  response.responseJSON.votes.blanco ? response.responseJSON.votes.blanco : 0]
+						['Ja ('+yesCount+')',     yesCount],
+						['Nee ('+noCount+')',      noCount],
+						['Blanco ('+blancoCount+')',  blancoCount]
 					]);
-					
+			
 					var votes = {
 						'voted': response.responseJSON.codes.voted ? response.responseJSON.codes.voted : 0,
 						'not_voted': response.responseJSON.codes['not-voted'] ? response.responseJSON.codes['not-voted'] : 0
@@ -32,11 +29,16 @@
 						title: "Tussenstand verkiezingen ("+votes.voted+"/"+votes.total+" stemmen uitgebracht)",
 						is3D: true,
 					};
-					
+			
 					var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
 					chart.draw(data, options);
+					setTimeout(drawChart, 1000 * 30);
 				}
 			});
+		}
+		
+		window.addEventListener('load', function() {
+			drawChart();
 		});
     </script>
   </head>

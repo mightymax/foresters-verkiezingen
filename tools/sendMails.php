@@ -67,7 +67,16 @@ while ($row = $emailResult->fetchArray(SQLITE3_ASSOC)) {
 			[$name, $row['email'], $code],
 			$TMPL
 		);
-		if (sendEmail($row['email'], $subject, $body, DRY_RUN)) {
+		
+		try {
+			$mailSendResult = sendEmail($row['email'], $subject, $body, DRY_RUN);
+		} catch (Exception $e) {
+			fwrite(STDERR, "{$row['email']},sendMail failed\n");
+			fwrite(STDERR, "sendMail error: {$e->getMessage()}\n");
+			fwrite(STDERR, "PANIC MODE ON LINE ".__LINE__."!!!\n");
+			exit(6);
+		}
+		if ($mailSendResult) {
 			
 			$stmtEmailUpdate->reset();
 			$stmtEmailUpdate->bindParam(':code', $code);
@@ -93,7 +102,7 @@ while ($row = $emailResult->fetchArray(SQLITE3_ASSOC)) {
 			
 		} else {
 			fwrite(STDERR, "{$row['email']},sendMail failed\n");
-			fwrite(STDERR, "PANIC MODE ON LINE ".__LINE__."!!!");
+			fwrite(STDERR, "PANIC MODE ON LINE ".__LINE__."!!!\n");
 			exit(6);
 			continue;
 		}
