@@ -177,6 +177,23 @@ class MyDB extends SQLite3
 		return self::$params;
 	}
 	
+	public function getCodes($code = null)
+	{
+		if ($code) {
+			$stmt = @$this->prepare('SELECT * FROM codes WHERE code=:code');
+		} else {
+			$stmt = @$this->prepare('SELECT * FROM codes');
+		}
+		if (!$stmt) techerr(__LINE__);
+		$stmt->bindValue(':code', $code);
+		$result = $stmt->execute();
+		$data = array();
+		while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+			$data[$row['code']] = $row['voted'];
+		}
+		return $data;
+	}
+	
 	public function getParam($key) 
 	{
 		return isset($this->getParams()[$key]) ? $this->getParams()[$key] : null;
