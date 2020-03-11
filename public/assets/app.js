@@ -89,7 +89,7 @@ var modalTmpl;
 		
 		$.each(navLinks, function(i, el) {
 			var url = (el.id === 'home' ? '/' : '/' + el.id);
-			var tmpl = './templates/' + el.id + '.html';
+			var tmpl = './templates/' + el.id + '.html?20200311';
 			ul.append($('<li class="nav-item"><a class="nav-link" href="#'+url+'">'+el.label+'</a>'));
 			$.ajax(tmpl, {
 				dataType: 'html',

@@ -44,7 +44,7 @@ if ($row['voted'] && (int)$row['voted']===1) {
 	
 	$data = array('found' => true);
 	
-	if (@$_GET['confirm-email']) {
+	if (FALSE && @$_GET['confirm-email']) {
 		try {
 			$subject = 'Bedankt voor jouw stem';
 			if ($vote === 1) {
