@@ -179,7 +179,7 @@ class MyDB extends SQLite3
 	
 	public function getCodes($code = null, $voted = null)
 	{
-		if (null !== $code) {
+		if ($code) {
 			$stmt = @$this->prepare('SELECT * FROM codes WHERE code=:code');
 		} elseif (null !== $voted) {
 			$stmt = @$this->prepare('SELECT * FROM codes WHERE voted=:voted');
