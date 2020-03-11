@@ -52,7 +52,7 @@ switch ($cmd) {
 	case 'codes':
 		$db = new MyDB();
 		header('Content-Type: application/json');
-		echo json_encode($db->getCodes(@$_GET['code']));
+		echo json_encode($db->getCodes(@$_GET['code'], @$_GET['voted']));
 		break;
 	default:
 		header("HTTP/1.1 405 Method Not Allowed");

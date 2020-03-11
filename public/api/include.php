@@ -177,15 +177,18 @@ class MyDB extends SQLite3
 		return self::$params;
 	}
 	
-	public function getCodes($code = null)
+	public function getCodes($code = null, $voted = null)
 	{
-		if ($code) {
+		if (null !== $code) {
 			$stmt = @$this->prepare('SELECT * FROM codes WHERE code=:code');
+		} elseif (null !== $voted) {
+			$stmt = @$this->prepare('SELECT * FROM codes WHERE voted=:voted');
 		} else {
 			$stmt = @$this->prepare('SELECT * FROM codes');
 		}
 		if (!$stmt) techerr(__LINE__);
 		$stmt->bindValue(':code', $code);
+		$stmt->bindValue(':voted', (int)$voted);
 		$result = $stmt->execute();
 		$data = array();
 		while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
