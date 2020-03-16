@@ -1,6 +1,8 @@
 <?php
+/*
+ * Relatiecode	Roepnaam	Achternaam	Naam	E-mail	Geslacht	Geboortedatum	Leeftijd	Failed
+*/
 require_once '../public/api/include.php';
-use PHPMailer\PHPMailer\PHPMailer;
 
 if(php_sapi_name()!=='cli') {
 	techerr(__LINE__, 'CLI mode only!');
@@ -20,21 +22,29 @@ if (!file_exists($csv) || !is_file($csv) || !is_readable($csv)) {
 $fp = fopen($csv, 'r');
 
 $i = 0;
-$db = new SQLite3(__DIR__ .'/emails.sqlite3');
+$db = new MyDb();
 
-$stmt = $db->prepare('INSERT INTO emails (relatiecode, naam, email, leeftijd) VALUES (:relatiecode, :naam, :email, :leeftijd)');
+$stmt = $db->prepare('INSERT INTO emails (relatiecode, naam, email, leeftijd, failed) VALUES (:relatiecode, :naam, :email, :leeftijd, :failed)');
 if (!$stmt) techerr(__LINE__, 'INSERT statement failed.');
 
-fwrite(STDOUT, "relatiecode,naam,email,leeftijd\n");
 while ($row = fgetcsv($fp, 1000, "\t")) {
 	if ($i === 0) {
 		$cols = $row;
 		$i++;
 		continue;
 	}
+	if (count($row)===8) {
+		$row[] = 0;
+	}
+	if (count($row) !== count($cols)) {
+		fwrite(STDERR, implode('|', $row).": wrong ammount of cols.\n");
+		continue;
+	}
 	$row = array_combine($cols, $row);
-	if( false === PHPMailer::validateAddress($row['E-mail'])) {
+
+	if(!isValidEmail($row['E-mail'])) {
 		fwrite(STDERR, "{$row['E-mail']},validateAddress fail\n");
+		continue;
 	}
 	
 	$nameParts = explode(',', $row['Naam'], 2);
@@ -44,6 +54,7 @@ while ($row = fgetcsv($fp, 1000, "\t")) {
 	$stmt->bindParam(':naam', $naam);
 	$stmt->bindParam(':email', $row['E-mail']);
 	$stmt->bindParam(':leeftijd', $row['Leeftijd']);
+	$stmt->bindParam(':failed', $row['Failed']);
 	if (@$stmt->execute()) {
 		$stmt->reset();
 	} else {

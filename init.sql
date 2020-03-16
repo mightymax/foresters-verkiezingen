@@ -12,4 +12,8 @@ CREATE INDEX ix_code ON codes (code);
 
 CREATE TABLE throttle (ip TEXT, attempts INT NOT NULL DEFAULT 1, last_seen DATETIME NULL);
 CREATE INDEX ix_throttle_ip ON throttle (ip);
+
+CREATE TABLE emails(relatiecode text PRIMARY KEY NOT NULL, naam TEXT NOT NULL, email TEXT NOT NULL, leeftijd INT NOT NULL, code TEXT NULL, failed INT NOT NULL DEFAULT 0);
+CREATE INDEX ix_emails_code ON emails (code);
+
 COMMIT;

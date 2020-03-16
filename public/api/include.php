@@ -7,11 +7,7 @@ if (file_exists(__DIR__ . '/defines.php')) {
 if (!defined('CONFIG_FILE_LOCATION')) define('CONFIG_FILE_LOCATION', __DIR__ . '/../../config.php');
 if (!defined('AUTOLOADER_LOCATION')) define('AUTOLOADER_LOCATION', __DIR__ . '/../../vendor/autoload.php');
 
-
 require AUTOLOADER_LOCATION;
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 
 function getConfig($section = null)
 {
@@ -22,45 +18,111 @@ function getConfig($section = null)
 	return $section === null ? $config : $config[$section];
 }
 
-function sendEmail($mailTo, $subject, $content, $dryRun = false)
+function sendEmail($mailTo, $subject, $strBody, $dryRun = false)
 {
-	$config = getConfig('email');
+	$config = getConfig('Gmail');
+	
+	$swift = (new Swift_Message())
+	        ->setSubject($subject)
+	        ->setFrom($config['From'])
+	        ->setTo($mailTo)
+	        ->setBody($strBody, 'text/html');
+	if (isset($config['ReplyTo'])) {
+		$swift->setReplyTo($config['ReplyTo']);
+	}
 
-	$mail = new PHPMailer(true);
+	$message = new Google_Service_Gmail_Message();
+	$message->setRaw(strtr(base64_encode($swift->toString()), array('+' => '-', '/' => '_')));
+
+	// Get the API client and construct the service object.
+	$client = getGmailClient();
+	$service = new Google_Service_Gmail($client);
+	if (false === $dryRun) {
+		return $service->users_messages->send("me", $message);
+	} else {
+		return true;
+	}
+}
+
+function isValidEmail($email)
+{
+	$validator = new Egulias\EmailValidator\EmailValidator();
+	return $validator->isValid($email, new Egulias\EmailValidator\Validation\RFCValidation());
+}
+
+function getJustTheGmailClient()
+{
+	$client = new Google_Client();
+	$client->setApplicationName('Foresters Verkiezingen');
+	$client->setScopes([
+		Google_Service_Gmail::GMAIL_COMPOSE, 
+		Google_Service_Gmail::GMAIL_READONLY, 
+		Google_Service_Gmail::GMAIL_SEND
+	]);
+	$config = getConfig('Gmail')['AuthConfig'];
+	$client->setClientId($config['client_id']);
+	$client->setClientSecret($config['client_secret']);
 	
-	//Defaults:
-	$mail->SMTPDebug = 0;
-	$mail->SMTPAuth = TRUE;
-	$mail->SMTPSecure = "tls";
-	$mail->Port     = 587;  
-	$mail->Host     = "smtp.gmail.com";
-	$mail->Mailer   = "smtp";
+	if (isset($config['redirect_uris'])) {
+		$client->setRedirectUri($config['redirect_uris'][0]);
+	}
 	
-	foreach ($config as $key => $val) {
-		if ($key === 'Mailer' && $val === 'smtp') $mail->IsSMTP();
-		if (!is_array($val) && !is_object($val)) {
-			$mail->set($key, $val);
-		} elseif ($key == 'From') {
-			$mail->SetFrom($val['email'], $val['name']);
-		} elseif ($key == 'ReplyTo') {
-			$mail->AddReplyTo($val['email'], $val['name']);
+	$client->setAccessType('offline');
+	$client->setPrompt('select_account consent');
+	return $client;
+}
+
+function getGmailClient($testAccessToken = false)
+{
+	$client = getJustTheGmailClient();
+	$db = new MyDb();
+	$accessTokenString = $db->getParam('GmailAccessToken');
+	if ($accessTokenString && json_decode($accessTokenString)) {
+		$accessToken = (array)json_decode($accessTokenString);
+		try {
+			$client->setAccessToken($accessToken);
+		} catch (InvalidArgumentException $e) {
+			$db->setParam('GmailAuthCode');
+			$msg = [
+				'error' => $e->getMessage(),
+				'trace' => $e->getTrace(),
+				'token' => $accessToken,
+				'$accessTokenString' => $accessTokenString
+			];
+			header('Content-Type: application/json');
+			echo json_encode($msg);
+			exit;
 		}
 	}
 	
-	// $mail->SMTPDebug = SMTP::DEBUG_SERVER;
-	$mail->WordWrap   = 80;
-	$mail->Subject = $subject;
-	$mail->AddAddress($mailTo);
-	$mail->MsgHTML($content);
-	$mail->IsHTML(true);
+    if ($client->isAccessTokenExpired()) {
+        // Refresh the token if possible, else fetch a new one.
+        if ($client->getRefreshToken()) {
+            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+        } else {
+            // Request authorization from the user.
+            $authUrl = $client->createAuthUrl();
+			if (true === $testAccessToken) {
+				return $authUrl;
+			}
+            // Request authorization from the user.
+            $authUrl = $client->createAuthUrl();
+			techerr(__LINE__, 'visit `'.$authUrl.'` to get a verification code and setParam `GmailAccessToken` next.');
 
-	if(true === $dryRun) {
-		return true;
-	} else {
-		// throw new Exception('Better safe than sorry!');
-		return $mail->Send();
-	}
+            // Exchange authorization code for an access token.
+            $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
+            $client->setAccessToken($accessToken);
+
+            // Check to see if there was an error.
+            if (array_key_exists('error', $accessToken)) {
+                throw new Exception(join(', ', $accessToken));
+            }
+        }
+		$db->setParam('GmailAuthCode', json_encode($client->getAccessToken()));
+    }
+	return $client;
 }
+
 
 function create_hash($size = 6)
 {
@@ -163,11 +225,18 @@ class MyDB extends SQLite3
 			}
 		}
 	}
-	public function getParams()
+	public function getParams(Array $excludes = NULL)
 	{
 		if (self::$params === null) {
-			$stmt = @$this->prepare('SELECT * FROM params');
-			if (!$stmt) techerr(__LINE__);
+			if ($excludes and count($excludes)) {
+				foreach($excludes as &$val) $val = $this->escapeString($val);
+				$stmt = @$this->prepare('SELECT * FROM params WHERE NOT(key IN (:excludes))');
+				if (!$stmt) techerr(__LINE__);
+				$stmt->bindValue(':excludes', implode(', ', $excludes));
+			} else {
+				$stmt = @$this->prepare('SELECT * FROM params');
+				if (!$stmt) techerr(__LINE__);
+			}
 			$result = $stmt->execute();
 			self::$params = array();
 			while ($row = $result->fetchArray(SQLITE3_ASSOC)) {

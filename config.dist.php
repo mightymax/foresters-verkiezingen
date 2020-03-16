@@ -3,25 +3,26 @@
 return [
 	'url' => 'http://deforesters.test/verkiezingen',
 	'dbPath' => __DIR__ . '/verkiezingen.sqlite3',
-	'email' => [
-		'SMTPDebug'  => 0,
-		'SMTPAuth'   => TRUE,
-		'SMTPSecure' => "tls",
-		'Port'       => 587,
-		'Username'   => "your-gmail-address@gmail.com",
-		'Password'   => "YOUR-VERY-SECRET-PASSWORD",
-		'Host'       => "smtp.gmail.com",
-		'Mailer'     => "smtp",
+	'Gmail' => [
 		'From' => [
-			'email' => 'your-gmail-address@gmail.com',
-			'name'  => 'Your fancy website name'
+			'verkiezingen@deforesters.nl' => 'Foresters Verkiezingen'
 		],
 		'ReplyTo' => [
-			'email' => 'your-gmail-address@gmail.com',
-			'name'  => 'Your fancy website name'
+			'noreply@deforesters.nl' => 'Foresters Verkiezingen'
+		],
+		/* See README.md for mail instructions */
+		'AuthConfig' => [
+			"client_id" => "<your-client-id>.apps.googleusercontent.com",
+			"project_id" => "<your-project-id>",
+			"client_secret" => "<your-client-secret>",
+			"redirect_uris" => [
+				"urn:ietf:wg:oauth:2.0:oob",
+				"http://localhost"
+			]
 		]
 	],
 	'admin' => [
+		/* Which IP Adresses are allowed to rhe Admin API */
 		'ip_addresses' => [
 			'127.0.0.1'
 		]

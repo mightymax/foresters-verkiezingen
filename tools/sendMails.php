@@ -1,7 +1,11 @@
 <?php
 define('DRY_RUN', false);
 include '../public/api/include.php';
-use PHPMailer\PHPMailer\PHPMailer;
+
+use Egulias\EmailValidator\EmailValidator;
+use Egulias\EmailValidator\Validation\RFCValidation;
+
+$validator = new EmailValidator();
 
 if(php_sapi_name()!=='cli') {
 	techerr('CLI mode only!');
@@ -45,7 +49,8 @@ while ($row = $emailResult->fetchArray(SQLITE3_ASSOC)) {
 		continue;
 	}
 
-	if( false === PHPMailer::validateAddress($row['email'])) {
+
+	if(!isValidEmail($row['email'])) {
 		fwrite(STDERR, "{$row['email']},validateAddress fail\n");
 		continue;
 	} else {

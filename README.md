@@ -27,8 +27,14 @@ Modifications should be self-explanatory, but feel free to ask for help.
 Also make sure your web server has write access to the sqlite3 DB in /usr/local/include/foresters-verkiezingen/
 
 ## Updating to latest changes
-    cd /usr/local/include/foresters-verkiezinge
+    cd /usr/local/include/foresters-verkiezingen
     git pull origin master
+	
+## About emails
+This system uses Google's GMail API to send e-mails. You do need a GMail/GSuite account for this.
+Enable the GMail API and save the 'AuthConfig' data in your config.php. You also need an AccessToken.
+To fetch on vist the api/admin.php?cmd=chechGmailClient, follow the link and copy/pastre the AuthToken.
+It is wise to repeat this before sending large batches of mails, since tokens do expire!
 
 ## Tags
  - v1.0 Version based on multiple candidates, both individuals as well as groups
